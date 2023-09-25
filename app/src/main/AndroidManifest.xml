@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="jp.co.ods.nfcdemoapp">
 
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.RECEIVE_REBOOT" />
+
+    <uses-permission android:name="jp.co.ods.nfcresister.PERMISSION_SEND_BROADCAST" />
 
     <application
         android:allowBackup="true"
@@ -22,9 +24,13 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name = ".MainActivity" android:exported="true" >
+        <receiver
+            android:name=".MyBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            tools:ignore="Instantiatable">
             <intent-filter>
-                <action android:name="android.intent.action.REBOOT" />
+                <action android:name="ods.NFC_FUNCTION_RESPONSE" />
             </intent-filter>
         </receiver>
 

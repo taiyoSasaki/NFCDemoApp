@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">NFCDemoApp</string>
+
+    <!-- ホーム画面用文字列 -->
+    <string name="home_tp_off">タッチパネル OFF中…</string>
+    <string name="home_usb_off">USB OFF中…</string>
+
 </resources>

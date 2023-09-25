@@ -1,21 +1,27 @@
 package jp.co.ods.nfcdemoapp
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.IntentFilter
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.os.Bundle
+import android.os.Handler
+import android.os.Message
 import android.provider.Settings
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
+import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
     companion object {
-        const val ID1 = "93DA19C1"
-        const val ID2 = "04695772E16E80"
-        const val ID3 = "011604005A1B5A03"
+        const val MSG_TPOFF_UI = 1
+        const val MSG_USBOFF_UI = 2
+        const val MSG_BROADCAST_RECEIVE = 3
     }
 
     private lateinit var nfcAdapter: NfcAdapter
@@ -24,9 +30,19 @@ class MainActivity : AppCompatActivity() {
     private var isTPOff = false
     private var isUSBOff = false
 
+    private lateinit var receiver :MyBroadcastReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // BroadcastReceiverを登録
+        receiver = MyBroadcastReceiver(mHandler)
+        val filter = IntentFilter("ods.NFC_FUNCTION_RESPONSE")
+        registerReceiver(receiver, filter)
+
+        tp_off_label.isVisible = false
+        usb_off_label.isVisible = false
 
         //NFCの初期化
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
@@ -75,21 +91,45 @@ class MainActivity : AppCompatActivity() {
     private fun doMethod() {
         val id = bytesToHexString(mTag!!.id)
         Log.d("doMethod", "読み取ったID = $id")
-        when(id) {
-            ID1 -> {
-                setTPEnable(isTPOff)
-                isTPOff = !isTPOff
-            }
-            ID2 -> {
-                setUSBEnable(isUSBOff)
-                isUSBOff = !isUSBOff
-            }
-            ID3 -> {
-                setReboot()
+
+        val intent = Intent("ods.NFC_ID_CHECK")
+        intent.putExtra("request_id", id)
+        sendBroadcast(intent)
+    }
+
+    //Handlerの設定
+    private val mHandler = @SuppressLint("HandlerLeak")
+    object : Handler() {
+        //メッセージ受信
+        override fun handleMessage(msg: Message) {
+            when (msg.what) {
+                MSG_TPOFF_UI -> tp_off_label.isVisible = isTPOff
+                MSG_USBOFF_UI -> usb_off_label.isVisible = isUSBOff
+
+                MSG_BROADCAST_RECEIVE -> {
+                    Log.d("BROADCAST_RECEIVE", "function = ${msg.obj}")
+                    when(msg.obj as String) {
+                        "A" -> {
+                            setTPEnable(isTPOff)
+                            isTPOff = !isTPOff
+                            sendEmptyMessage(MSG_TPOFF_UI)
+                        }
+                        "B" -> {
+                            setUSBEnable(isUSBOff)
+                            isUSBOff = !isUSBOff
+                            sendEmptyMessage(MSG_USBOFF_UI)
+                        }
+                        "C" -> {
+                            setReboot()
+                        }
+                    }
+
+
+                }
+
             }
         }
     }
-
 
     private fun setUSBEnable(boolean: Boolean) {
         if (boolean) {
@@ -116,7 +156,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setReboot() {
-        val intent = Intent("android.intent.action.REBOOT")
+        val intent = Intent("com.android.action.REBOOT")
         sendBroadcast(intent)
     }
 
@@ -139,5 +179,16 @@ class MainActivity : AppCompatActivity() {
                 or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
         actionBar?.hide()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // BroadcastReceiverを解除
+        unregisterReceiver(receiver)
+
+        if (isTPOff) {
+            setTPEnable(isTPOff)
+            isTPOff = !isTPOff
+        }
     }
 }

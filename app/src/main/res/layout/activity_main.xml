@@ -4,6 +4,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/home"
     tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/tp_off_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/home_tp_off"
+        android:textSize="60sp"
+        android:textColor="#000000"
+        android:gravity="center"
+        android:background="@color/yellow"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <TextView
+        android:id="@+id/usb_off_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/home_usb_off"
+        android:textSize="60sp"
+        android:textColor="#000000"
+        android:gravity="center"
+        android:background="@color/blue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="60dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
