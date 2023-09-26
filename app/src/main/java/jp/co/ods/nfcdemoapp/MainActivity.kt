@@ -47,6 +47,11 @@ class MainActivity : AppCompatActivity() {
         //NFCの初期化
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
 
+        //レストランボタン
+        restaurant_button.setOnClickListener {
+            val intent = Intent(applicationContext, RestaurantActivity::class.java)
+            startActivity(intent)
+        }
     }
 
 
